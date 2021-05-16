@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>SOCKET.IO DEMO</title>
+    <base>
+    <script src="js/jquery.js"></script>
+    <script src="js/socket/socket.io.js"></script>
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        #console {
+            height: 450px;
+            overflow: auto;
+        }
+
+        .username-msg {
+            color: orange;
+        }
+
+        .connect-msg {
+            color: green;
+        }
+
+        .disconnect-msg {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+<h1>发送的消息：<span id="data"></span></h1>
+<h1>发送的时间：<span id="current_time"></span></h1>
+<h1>状态：<span id="status"></span></h1>
+<h1>唯一id：<span id="code"></span></h1>
+<h1>
+    <button type="submit" id="btn" onclick="btn()">点击我获取唯一ID</button>
+</h1>
+<h1>
+    <button type="submit" id="btns" onclick="btns()">关闭连接</button>
+</h1>
+</body>
+<script type="text/javascript">
+    var xmlhttp=new XMLHttpRequest();
+    function btn(){
+        const socket = io('http://127.0.0.1:8888');
+        let txt
+        socket.on('connect', () => {
+            //连接成功后 返回状态
+            txt =  document.getElementById("code")
+            txt.innerHTML = socket.id
+            $.ajax({
+                type: "POST", // 以post方式发起请求
+                url: "http://localhost:8080/getstu", // 你的请求链接
+                data: { // 提交数据
+                    "uid": socket.id, // 前者为字段名，后者为数据
+                },
+                success(info) {
+                    var txt =  document.getElementById("status")
+                    txt.innerHTML=info.info
+                }
+            })
+            socket.on('server_event', data => {
+                $("#data").html(data.msg);
+                $("#current_time").html(data.date);
+            });
+        });
+    }
+    function btns() {
+        var txt =  document.getElementById("code").innerText
+        $.ajax({
+            type: "GET", // 以post方式发起请求
+            url: "http://localhost:8080/Logout", // 你的请求链接
+            data: { // 提交数据
+                "uid": txt, // 前者为字段名，后者为数据
+            },
+            success(info) {
+                    var txt =  document.getElementById("status")
+                    txt.innerHTML=info.status
+                    var txt1 =  document.getElementById("data")
+                    txt1.innerHTML=info.data
+                    var txt2 =  document.getElementById("current_time")
+                    txt2.innerHTML=info.current_time
+                    var txt3 =  document.getElementById("code")
+                    txt3.innerHTML=info.code
+            }
+        })
+    }
+</script>
+</html>
